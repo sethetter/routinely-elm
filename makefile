@@ -1,11 +1,8 @@
 build:
-	cd client && elm make --warn --yes src/Routinely.elm --output elm.js
+	elm make --warn --yes src/Routinely.elm --output elm.js
 
 clean:
-	rm -rf client/elm-stuff client/elm.js
-
-serve-client:
-	cd client && serve
+	rm -rf elm-stuff elm.js
 
 serve-api:
-	postgrest postgrest.conf
+	postgrest api/postgrest.conf
