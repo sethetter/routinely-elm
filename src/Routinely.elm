@@ -104,7 +104,7 @@ getActionLogs time = Http.send ActionLogsLoaded <| actionLogsRequest time
 actionLogsRequest : Time -> Http.Request (List ActionLog)
 actionLogsRequest time =
     let mostRecentMonday = time - ( ( daysAwayFromMonday time ) * 24.0 * Time.hour )
-        timestamp = Date.Extra.Format.isoString <| Date.fromTime mostRecentMonday
+        timestamp = Date.Extra.Format.isoDateString <| Date.fromTime mostRecentMonday
         actionLogsUrl = "http://localhost:3333/action_logs?created_at=gt." ++ timestamp
      in Http.get actionLogsUrl actionLogDecoder
 

@@ -16,4 +16,4 @@ insert into action_logs (name, value, action_id, created_at)
   values ('Brush teeth', 1, 1, current_timestamp);
 
 insert into action_logs (name, value, action_id, created_at)
-  values ('Clean room', 3, 2, date '08/28/17' + interval '1 hour');
+  values ('Clean room', 3, 2, date '08/29/17' + interval '1 hour');
