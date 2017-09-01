@@ -1,6 +1,6 @@
 module Routinely exposing (..)
 
-import Date exposing (Date)
+import Date exposing (Date, Day)
 import Date.Extra.Format
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -20,13 +20,11 @@ main =
         , view = view
         }
 
-
 type alias Model =
     { actions : List Action
     , actionLogs : List ActionLog
     , theTime : Time
     }
-
 
 type alias Action =
     { id : Int
@@ -35,7 +33,6 @@ type alias Action =
     , perWeek : Int
     , perDay : Int
     }
-
 
 type alias ActionLog =
     { id : Int
@@ -60,7 +57,6 @@ type Msg
     | ActionsLoaded (Result Http.Error (List Action))
     | ActionLogsLoaded (Result Http.Error (List ActionLog))
 
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -77,7 +73,6 @@ update msg model =
             model ! [ Cmd.none ]
         ActionLogsLoaded (Err _) ->
             model ! [ Cmd.none ]
-
 
 getActions : Cmd Msg
 getActions = Http.send ActionsLoaded actionsRequest
@@ -149,13 +144,15 @@ view model =
             ]
         ]
 
-weekDays : List String
-weekDays = [ "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" ]
+weekDays : List Day
+weekDays = [ Date.Mon, Date.Tue, Date.Wed, Date.Thu, Date.Fri, Date.Sat, Date.Sun ]
 
 viewTableHeaders : Html Msg
 viewTableHeaders =
     tr []
-        ( [ th [] [ text "" ] ] ++ List.map (\d -> th [] [ text d ]) weekDays )
+        ( [ th [] [ text "" ] ]
+              ++ List.map (\d -> th [] [ text <| toString d ]) weekDays
+        )
 
 viewWeeklyActions : List Action -> List ActionLog -> List ( Html Msg )
 viewWeeklyActions actions logs =
@@ -171,10 +168,21 @@ viewWeeklyActions actions logs =
 viewWeekDay : Action -> List ActionLog -> List ( Html Msg )
 viewWeekDay action logs =
     List.map
-        (\d -> td []
-             [ text "lolwat" ]
-        )
+        ( \d -> td [] ( viewLogsForDay d logs ) )
         weekDays
-    -- TODO, what's this going to show?
-    -- * A star for each `action.perDay`
 
+viewLogsForDay : Day -> List ActionLog -> List ( Html Msg )
+viewLogsForDay day logs =
+    List.map (\_ -> viewStar) (logsForDay day logs)
+
+viewStar : Html Msg
+viewStar = span [ class "glyphicon glyphicon-star" ] []
+
+logsForDay : Day -> List ActionLog -> List ActionLog
+logsForDay day =
+    List.filter
+        ( \log ->
+              case Date.fromString log.createdAt of
+                  Ok date -> Date.dayOfWeek date == day
+                  Err _ -> False
+        )
