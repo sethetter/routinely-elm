@@ -1,12 +1,13 @@
 module Routinely exposing (..)
 
+import Date exposing (Date)
+import Date.Extra.Format
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Json.Decode as Decode
+import List
 import Time exposing (Time)
-import Date exposing (Date)
-import Date.Extra.Format
 import Task
 
 
@@ -137,12 +138,43 @@ view model =
     div
         [ class "container"
         ]
-        [ h1 [] [ text "Routinely!" ]
+        [ h1 []
+              [ text "Routinely!" ]
         , table
             [ class "table table-bordered" ]
             [ thead []
-                [ tr []
-                    [ th [] [ text "Col 1 Header" ] ]
-                ]
+                [ viewTableHeaders ]
+            , tbody []
+                ( viewWeeklyActions model.actions model.actionLogs )
             ]
         ]
+
+weekDays : List String
+weekDays = [ "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" ]
+
+viewTableHeaders : Html Msg
+viewTableHeaders =
+    tr []
+        ( [ th [] [ text "" ] ] ++ List.map (\d -> th [] [ text d ]) weekDays )
+
+viewWeeklyActions : List Action -> List ActionLog -> List ( Html Msg )
+viewWeeklyActions actions logs =
+    List.map
+        (\a -> tr []
+             ( [ td [] [ text a.name ] ]
+                  ++
+                   viewWeekDay a (List.filter (\l -> l.actionId == a.id) logs)
+             )
+        )
+        actions
+
+viewWeekDay : Action -> List ActionLog -> List ( Html Msg )
+viewWeekDay action logs =
+    List.map
+        (\d -> td []
+             [ text "lolwat" ]
+        )
+        weekDays
+    -- TODO, what's this going to show?
+    -- * A star for each `action.perDay`
+
