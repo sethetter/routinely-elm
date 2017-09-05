@@ -1,0 +1,11 @@
+.action-week-complete {
+  background: rgb(200, 255, 200);
+}
+
+.action-day-complete {
+  color: rgb(204, 204, 0);
+}
+
+.action-day-incomplete {
+  color: rgb(170, 170, 170);
+}
