@@ -1,7 +1,6 @@
 module Routinely exposing (..)
 
 import Date exposing (Date, Day)
-import Date.Extra.Format
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
@@ -26,6 +25,7 @@ main =
 type alias Model =
     { actions : List Action
     , actionLogs : List ActionLog
+    , weeklyActionLogs : List ActionLog
     , theTime : Time
     }
 
@@ -52,6 +52,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { actions = []
       , actionLogs = []
+      , weeklyActionLogs = []
       , theTime = 0.0
       }
     , Task.perform CurrentTime Time.now
@@ -69,34 +70,58 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        NoOp ->
-            model ! [ Cmd.none ]
+    let
+        timeFromMidnight =
+            toFloat (round model.theTime % (round (24.0 * Time.hour)))
 
-        CurrentTime time ->
-            model ! [ getActions, getActionLogs time ]
+        timeFromStartOfWeek =
+            ((daysAwayFromMonday model.theTime) * 24.0 * Time.hour) - timeFromMidnight
 
-        GetActionsResponse (Ok newActions) ->
-            { model | actions = newActions } ! [ Cmd.none ]
+        mostRecentMonday =
+            model.theTime - timeFromStartOfWeek
+    in
+        case msg of
+            NoOp ->
+                model ! [ Cmd.none ]
 
-        GetActionLogsResponse (Ok newActionLogs) ->
-            { model | actionLogs = newActionLogs } ! [ Cmd.none ]
+            CurrentTime time ->
+                { model | theTime = time } ! [ getActions, getActionLogs ]
 
-        -- TODO: Maybe retry on err?
-        GetActionsResponse (Err _) ->
-            model ! [ Cmd.none ]
+            GetActionsResponse (Ok newActions) ->
+                { model | actions = newActions } ! [ Cmd.none ]
 
-        GetActionLogsResponse (Err _) ->
-            model ! [ Cmd.none ]
+            GetActionLogsResponse (Ok newActionLogs) ->
+                { model
+                    | actionLogs = newActionLogs
+                    , weeklyActionLogs =
+                        List.filter
+                            (\l ->
+                                case Date.fromString l.createdAt of
+                                    Ok date ->
+                                        Date.toTime date >= mostRecentMonday
 
-        CreateActionLog action ->
-            model ! [ postActionLog action ]
+                                    Err _ ->
+                                        False
+                            )
+                            newActionLogs
+                }
+                    ! [ Cmd.none ]
 
-        CreateActionLogResponse (Ok _) ->
-            model ! [ Task.perform CurrentTime Time.now ]
+            -- TODO: Maybe retry on err?
+            GetActionsResponse (Err _) ->
+                model ! [ Cmd.none ]
 
-        CreateActionLogResponse (Err _) ->
-            model ! [ Cmd.none ]
+            GetActionLogsResponse (Err _) ->
+                model ! [ Cmd.none ]
+
+            CreateActionLog action ->
+                model ! [ postActionLog action ]
+
+            CreateActionLogResponse (Ok _) ->
+                model ! [ Task.perform CurrentTime Time.now ]
+
+            CreateActionLogResponse (Err _) ->
+                model ! [ Cmd.none ]
 
 
 getActions : Cmd Msg
@@ -120,24 +145,14 @@ actionDecoder =
             (Decode.field "per_day" Decode.int)
 
 
-getActionLogs : Time -> Cmd Msg
-getActionLogs time =
-    Http.send GetActionLogsResponse <| actionLogsRequest time
+getActionLogs : Cmd Msg
+getActionLogs =
+    Http.send GetActionLogsResponse <| actionLogsRequest
 
 
-actionLogsRequest : Time -> Http.Request (List ActionLog)
-actionLogsRequest time =
-    let
-        mostRecentMonday =
-            time - ((daysAwayFromMonday time) * 24.0 * Time.hour)
-
-        timestamp =
-            Date.Extra.Format.isoDateString <| Date.fromTime mostRecentMonday
-
-        actionLogsUrl =
-            "http://localhost:3333/action_logs?created_at=gt." ++ timestamp
-    in
-        Http.get actionLogsUrl actionLogDecoder
+actionLogsRequest : Http.Request (List ActionLog)
+actionLogsRequest =
+    Http.get "http://localhost:3333/action_logs" actionLogDecoder
 
 
 postActionLog : Action -> Cmd Msg
@@ -198,18 +213,23 @@ actionLogDecoder =
 
 view : Model -> Html Msg
 view model =
-    div
-        [ class "container"
-        ]
-        [ h1 []
-            [ text "Routinely!" ]
-        , table
-            [ class "table table-bordered" ]
-            [ thead []
-                [ viewTableHeaders ]
-            , tbody []
-                (viewWeeklyActions model.actions model.actionLogs)
+    div [ class "container-fluid" ]
+        [ div [ class "row" ]
+            [ div [ class "col" ] [ h1 [] [ text "Routinely!" ] ]
+            , viewPoints model.actionLogs
             ]
+        , div [ class "row" ]
+            [ div [ class "col" ] [ viewActionsTable model ] ]
+        ]
+
+
+viewActionsTable : Model -> Html Msg
+viewActionsTable model =
+    table [ class "table table-bordered" ]
+        [ thead []
+            [ viewTableHeaders ]
+        , tbody []
+            (viewWeeklyActions model.actions model.weeklyActionLogs)
         ]
 
 
@@ -227,16 +247,16 @@ viewTableHeaders =
 
 
 viewWeeklyActions : List Action -> List ActionLog -> List (Html Msg)
-viewWeeklyActions actions logs =
+viewWeeklyActions actions weeklyLogs =
     List.map
-        (\a ->
+        (\action ->
             let
                 logsForAction =
-                    (List.filter (\l -> l.actionId == a.id) logs)
+                    (List.filter (\l -> l.actionId == action.id) weeklyLogs)
             in
-                tr [ class <| classesForActionRow a logsForAction ] <|
-                    [ viewActionLabelCell a ]
-                        ++ viewWeekDay a logsForAction
+                tr [ class <| classesForActionRow action logsForAction ] <|
+                    [ viewActionLabelCell action ]
+                        ++ viewWeekDay action logsForAction
         )
         actions
 
@@ -247,17 +267,20 @@ viewActionLabelCell action =
 
 
 classesForActionRow : Action -> List ActionLog -> String
-classesForActionRow action logs =
-    if List.length logs >= action.perWeek then
+classesForActionRow action logsForAction =
+    if List.length logsForAction >= action.perWeek then
         "action-week-complete"
     else
         "action-week-incomplete"
 
 
 viewWeekDay : Action -> List ActionLog -> List (Html Msg)
-viewWeekDay action logs =
+viewWeekDay action logsForAction =
     List.map
-        (\d -> td [ class <| classesForActionCell d action logs ] (viewLogsForDay d logs))
+        (\d ->
+            td [ class <| classesForActionCell d action logsForAction ]
+                (viewLogsForDay d logsForAction)
+        )
         weekDays
 
 
@@ -277,6 +300,17 @@ viewLogsForDay day logs =
 viewStar : Html Msg
 viewStar =
     span [ class "glyphicon glyphicon-star" ] []
+
+
+viewPoints : List ActionLog -> Html Msg
+viewPoints logs =
+    div [ class "col", style [ ( "text-align", "right" ) ] ]
+        [ h3 [] [ text <| "Points: " ++ (pointsTotalStr logs) ] ]
+
+
+pointsTotalStr : List ActionLog -> String
+pointsTotalStr logs =
+    List.map .value logs |> List.sum |> toString
 
 
 logsForDay : Day -> List ActionLog -> List ActionLog
