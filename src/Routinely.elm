@@ -1,6 +1,7 @@
 module Routinely exposing (..)
 
 import Date exposing (Date, Day)
+import Dialog
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
@@ -24,9 +25,11 @@ main =
 
 type alias Model =
     { actions : List Action
+    , selectedAction : Maybe Action
     , actionLogs : List ActionLog
     , weeklyActionLogs : List ActionLog
     , theTime : Time
+    , showDialog : Bool
     }
 
 
@@ -51,9 +54,11 @@ type alias ActionLog =
 init : ( Model, Cmd Msg )
 init =
     ( { actions = []
+      , selectedAction = Nothing
       , actionLogs = []
       , weeklyActionLogs = []
       , theTime = 0.0
+      , showDialog = False
       }
     , Task.perform CurrentTime Time.now
     )
@@ -61,6 +66,8 @@ init =
 
 type Msg
     = NoOp
+    | AcknowledgeCreateActionLog Action
+    | CloseDialog
     | CurrentTime Time
     | GetActionsResponse (Result Http.Error (List Action))
     | GetActionLogsResponse (Result Http.Error (List ActionLog))
@@ -83,6 +90,13 @@ update msg model =
         case msg of
             NoOp ->
                 model ! [ Cmd.none ]
+
+            CloseDialog ->
+                { model
+                    | showDialog = False
+                    , selectedAction = Nothing
+                }
+                    ! [ Cmd.none ]
 
             CurrentTime time ->
                 { model | theTime = time } ! [ getActions, getActionLogs ]
@@ -115,7 +129,14 @@ update msg model =
                 model ! [ Cmd.none ]
 
             CreateActionLog action ->
-                model ! [ postActionLog action ]
+                { model
+                    | showDialog = True
+                    , selectedAction = Just action
+                }
+                    ! [ Cmd.none ]
+
+            AcknowledgeCreateActionLog action ->
+                { model | showDialog = False } ! [ postActionLog action ]
 
             CreateActionLogResponse (Ok _) ->
                 model ! [ Task.perform CurrentTime Time.now ]
@@ -220,7 +241,35 @@ view model =
             ]
         , div [ class "row" ]
             [ div [ class "col" ] [ viewActionsTable model ] ]
+        , Dialog.view
+            (if model.showDialog then
+                case model.selectedAction of
+                    Just action ->
+                        Just (actionConfirmDialogConfig action)
+
+                    Nothing ->
+                        Nothing
+             else
+                Nothing
+            )
         ]
+
+
+actionConfirmDialogConfig : Action -> Dialog.Config Msg
+actionConfirmDialogConfig action =
+    { body = Just (text "Are you sure?")
+    , closeMessage = Just CloseDialog
+    , containerClass = Nothing
+    , footer =
+        Just
+            (button
+                [ class "btn btn-success"
+                , onClick <| AcknowledgeCreateActionLog action
+                ]
+                [ text "OK" ]
+            )
+    , header = Just (h3 [] [ text action.name ])
+    }
 
 
 viewActionsTable : Model -> Html Msg
