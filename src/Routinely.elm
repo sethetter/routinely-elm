@@ -241,6 +241,11 @@ view model =
             ]
         , div [ class "row" ]
             [ div [ class "col" ] [ viewActionsTable model ] ]
+        , div [ class "row" ]
+            [ div [ class "col" ] [ viewRewardMeter model ] ]
+        , div [ class "row" ]
+            [ div [ class "col" ] [ viewRewardsToRedeem model.actionLogs ] ]
+
         , Dialog.view
             (if model.showDialog then
                 case model.selectedAction of
@@ -343,12 +348,12 @@ classesForActionCell d action logs =
 
 viewLogsForDay : Day -> List ActionLog -> List (Html Msg)
 viewLogsForDay day logs =
-    List.map (\_ -> viewStar) (logsForDay day logs)
+    List.map (\_ -> (viewIcon "star")) (logsForDay day logs)
 
 
-viewStar : Html Msg
-viewStar =
-    span [ class "glyphicon glyphicon-star" ] []
+viewIcon : String -> Html Msg
+viewIcon icon =
+    span [ class <| "glyphicon glyphicon-" ++ icon ] []
 
 
 viewPoints : List ActionLog -> Html Msg
@@ -373,3 +378,43 @@ logsForDay day =
                 Err _ ->
                     False
         )
+
+viewRewardMeter : Model -> Html Msg
+viewRewardMeter model =
+    let baseClasses = "progress-bar progress-bar-striped progress-bar-animated "
+        percentToNextReward = progressToReward model.actionLogs
+     in div [ class "progress" ]
+        [ div [ class (baseClasses ++ (colorClassForPercent percentToNextReward))
+              , style [ ("width", (toString percentToNextReward) ++ "%") ]
+              ]
+              []
+        ]
+
+
+colorClassForPercent : Int -> String
+colorClassForPercent p =
+    if p <= 33 then "bg-danger"
+    else if p < 66 then "bg-warning"
+    else if p < 90 then "bg-info"
+    else "bg-success"
+
+
+progressToReward : List ActionLog -> Int
+progressToReward logs =
+    let totalPoints = List.sum <| List.map .value logs
+     in ( rem totalPoints 50 ) * 2
+
+
+viewRewardsToRedeem : List ActionLog -> Html Msg
+viewRewardsToRedeem logs =
+    let
+        gift =
+            span [ style [ ("color", "gold"), ("font-size", "2em") ] ]
+                [ viewIcon "gift", text " "]
+
+        numberOfRewards =
+            (List.sum <| List.map .value logs) // 50
+
+     in
+         h1 [ class "text-right" ]
+            (List.repeat numberOfRewards gift)
