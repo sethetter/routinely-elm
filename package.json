@@ -4,8 +4,7 @@
   "description": "",
   "main": "elm.js",
   "scripts": {
-    "serve-api": "postgrest api/postgrest.conf",
-    "serve-client": "elm live -- --warn --yes src/Routinely.elm --output elm.js",
+    "start": "npm run build && docker-compose up -d",
     "build": "elm make --warn --yes src/Routinely.elm --output elm.js",
     "clean": "rm -rf elm-stuff elm.js"
   },
