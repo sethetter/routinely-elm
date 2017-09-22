@@ -11,7 +11,14 @@ Also a habit tracking / reward system for kids.
 - PostgREST
 - Docker Compose
 
+## Requirements
+
+- [asdf](https://github.com/asdf-vm/asdf) + `asdf plugin-add nodejs`
+- [docker](http://docker.com/) + [docker-compose](https://github.com/docker/compose)
+
 ## Run
 
-* `npm start` <-- Builds elm src and starts docker
+* `asdf install`
+* `npm i`
+* `npm start`
 * Visit localhost:8080
