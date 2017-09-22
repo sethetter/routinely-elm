@@ -1,4 +1,0 @@
-* Tasks
-** TODO Write HTTP code for inital actions/logs load
-   [2017-08-24 Thu]
-   [[file:~/code/routinely/client/TODO.org]]

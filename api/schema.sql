@@ -25,7 +25,6 @@ begin
         (select name from actions where id = action_id limit 1),
         (select value from actions where id = action_id limit 1)
        );
-       select
 end
 $$ language 'plpgsql';
 
