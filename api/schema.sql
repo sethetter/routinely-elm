@@ -1,6 +1,6 @@
 begin;
 
-create table actions (
+create table if not exists actions (
        id            serial,
        name          varchar(64) not null,
        value         integer not null default 1,
@@ -8,7 +8,7 @@ create table actions (
        per_day       integer not null default 1
 );
 
-create table action_logs (
+create table if not exists action_logs (
        id            serial,
        name          varchar(64) not null,
        value         integer not null default 1,

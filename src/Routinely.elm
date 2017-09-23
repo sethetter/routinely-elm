@@ -144,6 +144,11 @@ update msg model =
             CreateActionLogResponse (Err _) ->
                 model ! [ Cmd.none ]
 
+apiPrefix : String
+apiPrefix = "/api"
+
+apiRoute : String -> String
+apiRoute path = apiPrefix ++ path
 
 getActions : Cmd Msg
 getActions =
@@ -152,7 +157,7 @@ getActions =
 
 getActionsRequest : Http.Request (List Action)
 getActionsRequest =
-    Http.get "http://localhost:3333/actions" actionDecoder
+    Http.get (apiRoute "/actions") actionDecoder
 
 
 actionDecoder : Decode.Decoder (List Action)
@@ -173,7 +178,7 @@ getActionLogs =
 
 actionLogsRequest : Http.Request (List ActionLog)
 actionLogsRequest =
-    Http.get "http://localhost:3333/action_logs" actionLogDecoder
+    Http.get (apiRoute "/action_logs") actionLogDecoder
 
 
 postActionLog : Action -> Cmd Msg
@@ -185,7 +190,7 @@ postActionLogRequest : Action -> Http.Request String
 postActionLogRequest action =
     let
         postActionLogUrl =
-            "http://localhost:3333/rpc/create_action_log"
+            apiRoute "/rpc/create_action_log"
 
         json =
             Encode.object <| [ ( "action_id", Encode.int action.id ) ]
@@ -193,7 +198,7 @@ postActionLogRequest action =
         body =
             Http.jsonBody json
     in
-        Http.post postActionLogUrl body (Decode.string)
+        Http.post postActionLogUrl body Decode.string
 
 
 daysAwayFromMonday : Time -> Float

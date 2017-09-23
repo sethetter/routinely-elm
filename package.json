@@ -5,8 +5,10 @@
   "main": "elm.js",
   "scripts": {
     "start": "npm run build && docker-compose up -d",
-    "build": "elm make --warn --yes src/Routinely.elm --output elm.js",
-    "clean": "rm -rf elm-stuff elm.js"
+    "build": "elm make --warn --yes src/Routinely.elm --output public/elm.js",
+    "clean": "npm run clean-elm && npm run clean-docker",
+    "clean-elm": "rm -rf elm-stuff public/elm.js",
+    "clean-docker": "docker-compose down && docker volume prune"
   },
   "author": "",
   "license": "ISC",
