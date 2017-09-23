@@ -9,6 +9,7 @@ services:
       - ./public/elm.js:/usr/share/nginx/html/elm.js
       - ./public/style.css:/usr/share/nginx/html/style.css
       - ./api/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./api/htpasswd:/etc/nginx/htpasswd
     links:
       - postgrest:postgrest
 
@@ -32,7 +33,6 @@ services:
       PGRST_MAX_ROWS: 1000
       PGRST_PRE_REQUEST: ''
 
-
   database:
     image: postgres
     volumes:
@@ -42,12 +42,13 @@ services:
     environment:
       POSTGRES_DB: routinely
 
-  database-admin:
-    image: adminer
-    ports:
-      - "8085:8080"
-    links:
-      - database:postgres
+  # Uncomment these lines and run `docker-compose up -d` for DB web UI
+  # database-admin:
+  #   image: adminer
+  #   ports:
+  #     - "8085:8080"
+  #   links:
+  #     - database:postgres
 
 volumes:
   pg-data: {}

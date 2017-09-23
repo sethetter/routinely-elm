@@ -8,7 +8,8 @@
     "build": "elm make --warn --yes src/Routinely.elm --output public/elm.js",
     "clean": "npm run clean-elm && npm run clean-docker",
     "clean-elm": "rm -rf elm-stuff public/elm.js",
-    "clean-docker": "docker-compose down && docker volume prune"
+    "clean-docker": "docker-compose down -v",
+    "set-password": "htpasswd -c api/htpasswd $user"
   },
   "author": "",
   "license": "ISC",

@@ -14,7 +14,14 @@ Also a habit tracking / reward system for kids.
 ## Requirements
 
 - [asdf](https://github.com/asdf-vm/asdf) + `asdf plugin-add nodejs`
-- [docker](http://docker.com/) + [docker-compose](https://github.com/docker/compose)
+- [docker](http://docker.com/) +
+  [docker-compose](https://github.com/docker/compose)
+
+## Login
+
+Run `user=yourusername npm run set-password` to create a password for the HTTP
+basic auth. Or, you can comment out those lines in `api/nginx.conf` and
+`docker-compose.yml` to leave it open.
 
 ## Run
 
