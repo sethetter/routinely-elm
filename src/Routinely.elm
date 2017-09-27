@@ -1,6 +1,5 @@
 module Routinely exposing (..)
 
-import Date exposing (Date, Day)
 import Dialog
 import Html exposing (..)
 import Html.Events exposing (onClick)
@@ -10,6 +9,10 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import List
 import Time exposing (Time)
+import Time.Date as Date exposing (Weekday)
+import Time.DateTime as DT
+import Time.TimeZones exposing (us_central)
+import Time.ZonedDateTime as ZDT exposing (ZonedDateTime)
 import Task
 
 
@@ -110,9 +113,9 @@ update msg model =
                     , weeklyActionLogs =
                         List.filter
                             (\l ->
-                                case Date.fromString l.createdAt of
+                                case strToZonedDateTime l.createdAt of
                                     Ok date ->
-                                        Date.toTime date >= mostRecentMonday
+                                        ZDT.toTimestamp date >= mostRecentMonday
 
                                     Err _ ->
                                         False
@@ -144,11 +147,25 @@ update msg model =
             CreateActionLogResponse (Err _) ->
                 model ! [ Cmd.none ]
 
+
+strToZonedDateTime : String -> Result String ZonedDateTime
+strToZonedDateTime str =
+    let
+        timezone =
+            us_central ()
+    in
+        ZDT.fromISO8601 timezone str
+
+
 apiPrefix : String
-apiPrefix = "/api"
+apiPrefix =
+    "/api"
+
 
 apiRoute : String -> String
-apiRoute path = apiPrefix ++ path
+apiRoute path =
+    apiPrefix ++ path
+
 
 getActions : Cmd Msg
 getActions =
@@ -203,7 +220,7 @@ postActionLogRequest action =
 
 daysAwayFromMonday : Time -> Float
 daysAwayFromMonday time =
-    case (Date.dayOfWeek <| Date.fromTime time) of
+    case (DT.weekday <| DT.fromTimestamp time) of
         Date.Mon ->
             0.0
 
@@ -250,7 +267,6 @@ view model =
             [ div [ class "col" ] [ viewRewardMeter model ] ]
         , div [ class "row" ]
             [ div [ class "col" ] [ viewRewardsToRedeem model.actionLogs ] ]
-
         , Dialog.view
             (if model.showDialog then
                 case model.selectedAction of
@@ -292,7 +308,7 @@ viewActionsTable model =
         ]
 
 
-weekDays : List Day
+weekDays : List Weekday
 weekDays =
     [ Date.Mon, Date.Tue, Date.Wed, Date.Thu, Date.Fri, Date.Sat, Date.Sun ]
 
@@ -343,7 +359,7 @@ viewWeekDay action logsForAction =
         weekDays
 
 
-classesForActionCell : Day -> Action -> List ActionLog -> String
+classesForActionCell : Weekday -> Action -> List ActionLog -> String
 classesForActionCell d action logs =
     if List.length (logsForDay d logs) >= action.perDay then
         "action-day-complete"
@@ -351,7 +367,7 @@ classesForActionCell d action logs =
         "action-day-incomplete"
 
 
-viewLogsForDay : Day -> List ActionLog -> List (Html Msg)
+viewLogsForDay : Weekday -> List ActionLog -> List (Html Msg)
 viewLogsForDay day logs =
     List.map (\_ -> (viewIcon "star")) (logsForDay day logs)
 
@@ -372,54 +388,68 @@ pointsTotalStr logs =
     List.map .value logs |> List.sum |> toString
 
 
-logsForDay : Day -> List ActionLog -> List ActionLog
+logsForDay : Weekday -> List ActionLog -> List ActionLog
 logsForDay day =
     List.filter
         (\log ->
-            case Date.fromString log.createdAt of
+            -- Convert createdAt to time, add TZ offset, and then convert to date
+            case strToZonedDateTime log.createdAt of
                 Ok date ->
-                    Date.dayOfWeek date == day
+                    ZDT.weekday date == day
 
                 Err _ ->
                     False
         )
 
+
 viewRewardMeter : Model -> Html Msg
 viewRewardMeter model =
-    let baseClasses = "progress-bar progress-bar-striped progress-bar-animated "
-        percentToNextReward = progressToReward model.actionLogs
-     in div [ class "progress" ]
-        [ div [ class (baseClasses ++ (colorClassForPercent percentToNextReward))
-              , style [ ("width", (toString percentToNextReward) ++ "%") ]
-              ]
-              []
-        ]
+    let
+        baseClasses =
+            "progress-bar progress-bar-striped progress-bar-animated "
+
+        percentToNextReward =
+            progressToReward model.actionLogs
+    in
+        div [ class "progress" ]
+            [ div
+                [ class (baseClasses ++ (colorClassForPercent percentToNextReward))
+                , style [ ( "width", (toString percentToNextReward) ++ "%" ) ]
+                ]
+                []
+            ]
 
 
 colorClassForPercent : Int -> String
 colorClassForPercent p =
-    if p <= 33 then "bg-danger"
-    else if p < 66 then "bg-warning"
-    else if p < 90 then "bg-info"
-    else "bg-success"
+    if p <= 33 then
+        "bg-danger"
+    else if p < 66 then
+        "bg-warning"
+    else if p < 90 then
+        "bg-info"
+    else
+        "bg-success"
 
 
 progressToReward : List ActionLog -> Int
 progressToReward logs =
-    let totalPoints = List.sum <| List.map .value logs
-     in ( rem totalPoints 50 ) * 2
+    let
+        totalPoints =
+            List.sum <| List.map .value logs
+    in
+        (rem totalPoints 50) * 2
 
 
 viewRewardsToRedeem : List ActionLog -> Html Msg
 viewRewardsToRedeem logs =
     let
         gift =
-            span [ style [ ("color", "gold"), ("font-size", "2em") ] ]
-                [ viewIcon "gift", text " "]
+            span [ style [ ( "color", "gold" ), ( "font-size", "2em" ) ] ]
+                [ viewIcon "gift", text " " ]
 
         numberOfRewards =
             (List.sum <| List.map .value logs) // 50
-
-     in
-         h1 [ class "text-right" ]
+    in
+        h1 [ class "text-right" ]
             (List.repeat numberOfRewards gift)
