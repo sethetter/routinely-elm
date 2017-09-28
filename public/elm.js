@@ -18154,9 +18154,11 @@ var _user$project$Routinely$postActionLogRequest = function (action) {
 	return A3(_elm_lang$http$Http$post, postActionLogUrl, body, _elm_lang$core$Json_Decode$string);
 };
 var _user$project$Routinely$strToZonedDateTime = function (str) {
-	var timezone = _elm_community$elm_time$Time_TimeZones$us_central(
-		{ctor: '_Tuple0'});
-	return A2(_elm_community$elm_time$Time_ZonedDateTime$fromISO8601, timezone, str);
+	return A2(
+		_elm_community$elm_time$Time_ZonedDateTime$fromISO8601,
+		_elm_community$elm_time$Time_TimeZones$us_central(
+			{ctor: '_Tuple0'}),
+		A2(_elm_lang$core$Basics_ops['++'], str, '+00:00'));
 };
 var _user$project$Routinely$logsForDay = function (day) {
 	return _elm_lang$core$List$filter(

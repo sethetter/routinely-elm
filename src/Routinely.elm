@@ -9,7 +9,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import List
 import Time exposing (Time)
-import Time.Date as Date exposing (Weekday)
+import Time.Date exposing (Weekday)
 import Time.DateTime as DT
 import Time.TimeZones exposing (us_central)
 import Time.ZonedDateTime as ZDT exposing (ZonedDateTime)
@@ -150,11 +150,7 @@ update msg model =
 
 strToZonedDateTime : String -> Result String ZonedDateTime
 strToZonedDateTime str =
-    let
-        timezone =
-            us_central ()
-    in
-        ZDT.fromISO8601 timezone str
+    ZDT.fromISO8601 (us_central ()) <| str ++ "+00:00"
 
 
 apiPrefix : String
@@ -221,25 +217,25 @@ postActionLogRequest action =
 daysAwayFromMonday : Time -> Float
 daysAwayFromMonday time =
     case (DT.weekday <| DT.fromTimestamp time) of
-        Date.Mon ->
+        Time.Date.Mon ->
             0.0
 
-        Date.Tue ->
+        Time.Date.Tue ->
             1.0
 
-        Date.Wed ->
+        Time.Date.Wed ->
             2.0
 
-        Date.Thu ->
+        Time.Date.Thu ->
             3.0
 
-        Date.Fri ->
+        Time.Date.Fri ->
             4.0
 
-        Date.Sat ->
+        Time.Date.Sat ->
             5.0
 
-        Date.Sun ->
+        Time.Date.Sun ->
             6.0
 
 
@@ -310,7 +306,7 @@ viewActionsTable model =
 
 weekDays : List Weekday
 weekDays =
-    [ Date.Mon, Date.Tue, Date.Wed, Date.Thu, Date.Fri, Date.Sat, Date.Sun ]
+    [ Time.Date.Mon, Time.Date.Tue, Time.Date.Wed, Time.Date.Thu, Time.Date.Fri, Time.Date.Sat, Time.Date.Sun ]
 
 
 viewTableHeaders : Html Msg
