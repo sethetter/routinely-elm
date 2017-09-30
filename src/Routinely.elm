@@ -85,7 +85,7 @@ update msg model =
             toFloat (round model.theTime % (round (24.0 * Time.hour)))
 
         timeFromStartOfWeek =
-            ((daysAwayFromMonday model.theTime) * 24.0 * Time.hour) - timeFromMidnight
+            ((daysAwayFromMonday model.theTime) * 24.0 * Time.hour) + timeFromMidnight
 
         mostRecentMonday =
             model.theTime - timeFromStartOfWeek

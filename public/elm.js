@@ -18359,7 +18359,7 @@ var _user$project$Routinely$update = F2(
 				_elm_lang$core$Basics_ops['%'],
 				_elm_lang$core$Basics$round(model.theTime),
 				_elm_lang$core$Basics$round(24.0 * _elm_lang$core$Time$hour)));
-		var timeFromStartOfWeek = ((_user$project$Routinely$daysAwayFromMonday(model.theTime) * 24.0) * _elm_lang$core$Time$hour) - timeFromMidnight;
+		var timeFromStartOfWeek = ((_user$project$Routinely$daysAwayFromMonday(model.theTime) * 24.0) * _elm_lang$core$Time$hour) + timeFromMidnight;
 		var mostRecentMonday = model.theTime - timeFromStartOfWeek;
 		var _p3 = msg;
 		switch (_p3.ctor) {
