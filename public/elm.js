@@ -17981,15 +17981,27 @@ var _user$project$Routinely$viewPoints = function (logs) {
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$h3,
-				{ctor: '[]'},
+				_elm_lang$html$Html$h2,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Points: ',
-							_user$project$Routinely$pointsTotalStr(logs))),
+					_0: _elm_lang$html$Html_Attributes$class('align-middle'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$span,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('badge badge-pill badge-warning'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								_user$project$Routinely$pointsTotalStr(logs)),
+							_1: {ctor: '[]'}
+						}),
 					_1: {ctor: '[]'}
 				}),
 			_1: {ctor: '[]'}
@@ -18558,7 +18570,7 @@ var _user$project$Routinely$view = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('row'),
+					_0: _elm_lang$html$Html_Attributes$class('row top'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -18577,7 +18589,18 @@ var _user$project$Routinely$view = function (model) {
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text('Routinely!'),
+									_0: A2(
+										_elm_lang$html$Html$span,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('align-middle'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Routinely!'),
+											_1: {ctor: '[]'}
+										}),
 									_1: {ctor: '[]'}
 								}),
 							_1: {ctor: '[]'}

@@ -1,5 +1,10 @@
+.row.top {
+  height: 80px;
+}
+
 .table.table-bordered {
   border: 1px solid #ccc;
+  background-color: #253544
 }
 
 .action-week-complete {

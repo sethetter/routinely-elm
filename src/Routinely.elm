@@ -253,8 +253,8 @@ actionLogDecoder =
 view : Model -> Html Msg
 view model =
     div [ class "container-fluid" ]
-        [ div [ class "row" ]
-            [ div [ class "col" ] [ h1 [] [ text "Routinely!" ] ]
+        [ div [ class "row top" ]
+            [ div [ class "col" ] [ h1 [] [ span [ class "align-middle" ] [ text "Routinely!" ] ] ]
             , viewPoints model.actionLogs
             ]
         , div [ class "row" ]
@@ -376,7 +376,8 @@ viewIcon icon =
 viewPoints : List ActionLog -> Html Msg
 viewPoints logs =
     div [ class "col", style [ ( "text-align", "right" ) ] ]
-        [ h3 [] [ text <| "Points: " ++ (pointsTotalStr logs) ] ]
+        [ h2 [ class "align-middle" ] [
+               span [ class "badge badge-pill badge-warning" ] [ text <| (pointsTotalStr logs) ] ] ]
 
 
 pointsTotalStr : List ActionLog -> String
