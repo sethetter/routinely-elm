@@ -18013,7 +18013,7 @@ var _user$project$Routinely$viewIcon = function (icon) {
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$class(
-				A2(_elm_lang$core$Basics_ops['++'], 'glyphicon glyphicon-', icon)),
+				A2(_elm_lang$core$Basics_ops['++'], 'oi oi-', icon)),
 			_1: {ctor: '[]'}
 		},
 		{ctor: '[]'});

@@ -370,7 +370,7 @@ viewLogsForDay day logs =
 
 viewIcon : String -> Html Msg
 viewIcon icon =
-    span [ class <| "glyphicon glyphicon-" ++ icon ] []
+    span [ class <| "oi oi-" ++ icon ] []
 
 
 viewPoints : List ActionLog -> Html Msg

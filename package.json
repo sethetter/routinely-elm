@@ -5,7 +5,8 @@
   "main": "elm.js",
   "scripts": {
     "start": "npm run build && docker-compose up -d",
-    "build": "elm make --warn --yes src/Routinely.elm --output public/elm.js",
+    "build": "npm run assets && elm make --warn --yes src/Routinely.elm --output public/elm.js",
+    "assets": "cp -r ./node_modules/open-iconic/font public/open-iconic",
     "clean": "npm run clean-elm && npm run clean-docker",
     "clean-elm": "rm -rf elm-stuff public/elm.js",
     "clean-docker": "docker-compose down -v",
@@ -16,5 +17,8 @@
   "devDependencies": {
     "elm": "^0.18.0",
     "elm-live": "^2.7.5"
+  },
+  "dependencies": {
+    "open-iconic": "^1.1.1"
   }
 }
