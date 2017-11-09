@@ -443,7 +443,7 @@ viewRewardsToRedeem logs =
     let
         gift =
             span [ style [ ( "color", "gold" ), ( "font-size", "2em" ) ] ]
-                [ viewIcon "gift", text " " ]
+                [ viewIcon "bookmark", text " " ]
 
         numberOfRewards =
             (List.sum <| List.map .value logs) // 50

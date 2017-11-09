@@ -18044,7 +18044,7 @@ var _user$project$Routinely$viewRewardsToRedeem = function (logs) {
 		},
 		{
 			ctor: '::',
-			_0: _user$project$Routinely$viewIcon('gift'),
+			_0: _user$project$Routinely$viewIcon('bookmark'),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html$text(' '),
